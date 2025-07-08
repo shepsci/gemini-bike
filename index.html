@@ -13,13 +13,38 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { height: 100vh; }
+        .legend {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <script>
         // Initialize the map
-        var map = L.map('map').setView([39.7532, -105.0003], 13); // Centered on Union Station
+        var map = L.map('map', {
+            center: [39.7532, -105.0003],
+            zoom: 13,
+            dragging: false,
+            touchZoom: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            boxZoom: false,
+            keyboard: false,
+            zoomControl: false
+        });
 
         // Add a tile layer (the base map)
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -27,6 +52,32 @@
             subdomains: 'abcd',
             maxZoom: 20
         }).addTo(map);
+
+        // Add a legend
+        var legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades = [
+                    {color: 'blue', label: 'Separated Bike Lane'},
+                    {color: 'green', label: 'Bike Lane'},
+                    {color: 'purple', label: 'Designated Cycleway'},
+                    {color: 'orange', label: 'Shoulder'},
+                    {color: 'red', label: 'No Bike Lane'},
+                    {color: 'gold', label: 'Fun Route (Park/Path)'}
+                ],
+                labels = ['<strong>Bike Friendliness</strong>'];
+            for (var i = 0; i < grades.length; i++) {
+                labels.push(
+                    '<i style="background:' + grades[i].color + '"></i> ' +
+                    grades[i].label
+                );
+            }
+            labels.push('<br><strong>Traffic</strong>');
+            labels.push('<i style="border-bottom: 2px dashed black;"></i> Heavy Traffic');
+            div.innerHTML = labels.join('<br>');
+            return div;
+        };
+        legend.addTo(map);
 
         // Fetch and display bike data
         const unionStationCoords = [39.7532, -105.0003];
