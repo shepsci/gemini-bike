@@ -65,6 +65,12 @@
                             style.color = 'red';
                         }
 
+                        // Fun factor
+                        if (tags.leisure === 'park' || tags.leisure === 'recreation_ground' || tags.highway === 'footway' || tags.highway === 'path') {
+                            style.color = '#FFD700'; // Gold for fun routes
+                            style.weight = 7;
+                        }
+
                         return style;
                     }
                 }).addTo(map);
