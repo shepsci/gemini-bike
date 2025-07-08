@@ -39,20 +39,33 @@
                 L.geoJSON(data, {
                     style: function(feature) {
                         const tags = feature.properties.tags;
+                        let style = { weight: 1 };
+
+                        // Traffic volume
+                        if (tags.highway === 'primary' || tags.highway === 'secondary' || tags.highway === 'trunk') {
+                            style.dashArray = '5, 5'; // Dashed line for heavy traffic
+                        }
+
+                        // Bike lane type
                         if (tags.cycleway) {
                             if (tags.cycleway === 'lane') {
-                                return { color: 'green', weight: 3 }; // Normal bike lane
+                                style.color = 'green';
+                                style.weight = 3;
                             } else if (tags.cycleway === 'track') {
-                                return { color: 'blue', weight: 5 }; // Separated bike lane
+                                style.color = 'blue';
+                                style.weight = 5;
                             }
+                        } else if (tags.highway === 'cycleway') {
+                            style.color = 'purple';
+                            style.weight = 5;
+                        } else if (tags.shoulder) {
+                            style.color = 'orange';
+                            style.weight = 2;
+                        } else {
+                            style.color = 'red';
                         }
-                        if (tags.highway === 'cycleway') {
-                            return { color: 'purple', weight: 5 }; // Designated cycleway
-                        }
-                        if (tags.shoulder) {
-                            return { color: 'orange', weight: 2 }; // Shoulder
-                        }
-                        return { color: 'red', weight: 1 }; // No bike lane
+
+                        return style;
                     }
                 }).addTo(map);
             });
