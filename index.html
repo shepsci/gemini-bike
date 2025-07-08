@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Denver Bike Map</title>
+    <title>Denver Bike Lane Map</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -13,21 +13,6 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { height: 100vh; }
-        .legend {
-            padding: 6px 8px;
-            font: 14px/16px Arial, Helvetica, sans-serif;
-            background: white;
-            background: rgba(255,255,255,0.8);
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border-radius: 5px;
-        }
-        .legend i {
-            width: 18px;
-            height: 18px;
-            float: left;
-            margin-right: 8px;
-            opacity: 0.7;
-        }
     </style>
 </head>
 <body>
@@ -53,76 +38,17 @@
             maxZoom: 20
         }).addTo(map);
 
-        // Add a legend
-        var legend = L.control({position: 'bottomright'});
-        legend.onAdd = function (map) {
-            var div = L.DomUtil.create('div', 'info legend'),
-                grades = [
-                    {color: 'blue', label: 'Separated Bike Lane'},
-                    {color: 'green', label: 'Bike Lane'},
-                    {color: 'purple', label: 'Designated Cycleway'},
-                    {color: 'orange', label: 'Shoulder'},
-                    {color: 'red', label: 'No Bike Lane'},
-                    {color: 'gold', label: 'Fun Route (Park/Path)'}
-                ],
-                labels = ['<strong>Bike Friendliness</strong>'];
-            for (var i = 0; i < grades.length; i++) {
-                labels.push(
-                    '<i style="background:' + grades[i].color + '"></i> ' +
-                    grades[i].label
-                );
-            }
-            labels.push('<br><strong>Traffic</strong>');
-            labels.push('<i style="border-bottom: 2px dashed black;"></i> Heavy Traffic');
-            div.innerHTML = labels.join('<br>');
-            return div;
-        };
-        legend.addTo(map);
-
         // Fetch and display bike data
         const unionStationCoords = [39.7532, -105.0003];
         const radius = 8047; // 5 miles in meters
-        const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];(way["highway"](around:${radius},${unionStationCoords[0]},${unionStationCoords[1]}););out geom;`;
+        const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];(way["highway"="cycleway"](around:${radius},${unionStationCoords[0]},${unionStationCoords[1]});way["cycleway"](around:${radius},${unionStationCoords[0]},${unionStationCoords[1]}););out geom;`;
 
         fetch(overpassUrl)
             .then(response => response.json())
             .then(data => {
                 L.geoJSON(data, {
                     style: function(feature) {
-                        const tags = feature.properties.tags;
-                        let style = { weight: 1 };
-
-                        // Traffic volume
-                        if (tags.highway === 'primary' || tags.highway === 'secondary' || tags.highway === 'trunk') {
-                            style.dashArray = '5, 5'; // Dashed line for heavy traffic
-                        }
-
-                        // Bike lane type
-                        if (tags.cycleway) {
-                            if (tags.cycleway === 'lane') {
-                                style.color = 'green';
-                                style.weight = 3;
-                            } else if (tags.cycleway === 'track') {
-                                style.color = 'blue';
-                                style.weight = 5;
-                            }
-                        } else if (tags.highway === 'cycleway') {
-                            style.color = 'purple';
-                            style.weight = 5;
-                        } else if (tags.shoulder) {
-                            style.color = 'orange';
-                            style.weight = 2;
-                        } else {
-                            style.color = 'red';
-                        }
-
-                        // Fun factor
-                        if (tags.leisure === 'park' || tags.leisure === 'recreation_ground' || tags.highway === 'footway' || tags.highway === 'path') {
-                            style.color = '#FFD700'; // Gold for fun routes
-                            style.weight = 7;
-                        }
-
-                        return style;
+                        return { color: "blue", weight: 3 };
                     }
                 }).addTo(map);
             });
