@@ -38,8 +38,21 @@
             .then(data => {
                 L.geoJSON(data, {
                     style: function(feature) {
-                        // Default style for now
-                        return { color: "#ff7800", weight: 5 };
+                        const tags = feature.properties.tags;
+                        if (tags.cycleway) {
+                            if (tags.cycleway === 'lane') {
+                                return { color: 'green', weight: 3 }; // Normal bike lane
+                            } else if (tags.cycleway === 'track') {
+                                return { color: 'blue', weight: 5 }; // Separated bike lane
+                            }
+                        }
+                        if (tags.highway === 'cycleway') {
+                            return { color: 'purple', weight: 5 }; // Designated cycleway
+                        }
+                        if (tags.shoulder) {
+                            return { color: 'orange', weight: 2 }; // Shoulder
+                        }
+                        return { color: 'red', weight: 1 }; // No bike lane
                     }
                 }).addTo(map);
             });
